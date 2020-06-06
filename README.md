@@ -6,7 +6,7 @@ The package is heavily inspired by implementations in other languages, namely [T
 
 If you are looking to start hacking with Tello, these pages should give a good start: [Low-level protocol](https://tellopilots.com/wiki/protocol/) (quite incomplete but still useful), [Tello. What's possible?](https://tellopilots.com/threads/tello-whats-possible.88/), and [Has anyone decoded the log headers/messages from the Tello?](https://tellopilots.com/threads/has-anyone-decoded-the-log-headers-messages-from-the-tello.511/).
 
-The package provides two interfaces: `Tello` and `TelloCommander`. The latter provides a simplified interface to the drone that allows to chain a few simple network and motion commands.
+The package provides two interfaces: `Tello` and `TelloCommander`. The latter provides a simplified interface to the drone that allows one to chain a few simple network and motion commands.
 
 ## Example
 
@@ -61,7 +61,7 @@ The `class Tello` public API provides the following main function (the list is n
 - `func hover()` — cancels the current position target. Same as `cancelGoTo()`.
 - `func emergency()` — sends emergency command that immediately kills the motors (*known bug*: the command fails sometimes).
 
-The TelloKit reports the states and sensors data using Apple's [Combine](https://developer.apple.com/documentation/combine) publishers. All the sensor measurements are reported in SI units, i.e. [m], [m/s], etc. The following public publishers are available:
+The TelloSwift reports the states and sensors data using Apple's [Combine](https://developer.apple.com/documentation/combine) publishers. All the sensor measurements are reported in SI units, i.e. [m], [m/s], etc. The following public publishers are available:
 
 - `var connectionState: Status<ConnectionState>` (repeated values are ignored) — connection state.
 - `var flightState: Status<FlightState>` (repeated values are ignored) — flight state.
@@ -69,30 +69,30 @@ The TelloKit reports the states and sensors data using Apple's [Combine](https:/
 - `var wifiStrength: Sensor<UInt8>` — Wi-Fi signal strength.
 - `var lightConditions: Sensor<Bool>` — reports only `true` in case of insufficient light. (TODO: the name needs refactoring, perhaps).
 - `var imu: Sensor<Imu>` — IMU measurements: accelerometer, gyro, orientation, and temperature.
-- `var mvo: Sensor<Mvo>` — MVO measurements: linear position and velocity in MVO frame, height (from proximity sensor), and measurement covariances (these ones are quite tricky, TelloKit's interpretation might be wrong).
+- `var mvo: Sensor<Mvo>` — MVO measurements: linear position and velocity in MVO frame, height (from proximity sensor), and measurement covariances (these ones are quite tricky, TelloSwift's interpretation might be wrong).
 - `var vo: Sensor<Vo>` — VO measurements: linear position and velocity in VO frame.
 - `var proximity: Sensor<Double>` — proximity sensor measurements.
 - `var controller: (state: Sensor<PositionController.State>, input: Sensor<QuadrotorPose>, output: Sensor<QuadrotorControls>, target: Sensor<QuadrotorPose>, origin: Sensor<QuadrotorPose>)` — inputs and outputs of the position controller. The `target` and the `origin` are reported only when changed and `input` and `output` are reported at input's rate.
 
 ### `TelloSwift.TelloCommander`
-The `TelloCommander` class public API provides the following main function that correspond to `Tello` API almost one-to-one but that support chaining (please see the descriptions above):
+The `TelloCommander` class public API provides the following functions that correspond to their `Tello` API  siblings almost one-to-one but also support chaining:
 
-- `connect()`
-- `disconnect()`
-- `takeoff()`
-- `land()`
-- `goTo()`
+- `connect() -> Chain`
+- `disconnect() -> Chain`
+- `takeoff() -> Chain`
+- `land() -> Chain`
+- `goTo() -> Chain`
 
-It also allows one to access various sensors and states in a simplified way through a callback mechanism:
+Access to various sensors and states in a simplified way through a callback mechanism:
 
-- `connectionState()`
-- `flightState()`
-- `flightData()`
-- `wifiStrength()`
-- `lightConditions()`
-- `imu()`
-- `mvo()`
-- `vo()`
+- `connectionState() -> Chain`
+- `flightState() -> Chain`
+- `flightData() -> Chain`
+- `wifiStrength() -> Chain`
+- `lightConditions() -> Chain`
+- `imu() -> Chain`
+- `mvo() -> Chain`
+- `vo() -> Chain`
 
 The chaining is implemented using Apple's [Combine](https://developer.apple.com/documentation/combine) framework through the Future/Promise mechanism. Correspondingly the `Chain` returned by the methods listed above is a `Combine.Publisher`. 
 
