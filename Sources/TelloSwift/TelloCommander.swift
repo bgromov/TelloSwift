@@ -65,7 +65,7 @@ public class TelloCommander: ChainableCommand<Tello, Void, Error> {
     public struct NotImplemented: Error {}
 
     /// Command chain.
-    public typealias Chain = TelloCommander //ChainableCommand<Tello, Void, Error>
+    public typealias Chain = TelloCommander
 
     /// Reference to Tello instance.
     public private(set) var tello: Tello
@@ -81,7 +81,6 @@ public class TelloCommander: ChainableCommand<Tello, Void, Error> {
     public init(tello: Tello) {
         self.tello = tello
         self.subs = []
-//        self.command = Chain(context: self.tello) { $0(.success(Void())) }
         super.init(context: self.tello) { $0(.success(Void())) }
     }
 
