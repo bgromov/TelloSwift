@@ -12,7 +12,7 @@ import simd
 
 infix operator <- : AssignmentPrecedence
 
-public class Sensor<T>: Publisher where T: Equatable {
+public class Sensor<T>: ObservableObject, Publisher where T: Equatable {
     public typealias DataType = T
     public typealias Output = T
     public typealias Failure = Never
@@ -26,27 +26,30 @@ public class Sensor<T>: Publisher where T: Equatable {
         subj?.receive(subscriber: subscriber)
     }
 
-    public internal(set) var testVal: Int = 0
     public internal(set) var value: Output? {
         willSet {
             if let val = newValue {
                 if (!repeatedValues) && (newValue == value) {
                     return
                 }
-                // send new value, old one can be accessed with `value` property
-                subj?.send(val)
+
+                DispatchQueue.main.async {
+                    // send new value, old one can be accessed with `value` property
+                    self.subj?.send(val)
+                    self.objectWillChange.send()
+                }
             }
         }
     }
 
-    init(with value: T?, repeatedValues: Bool = true) {
+    public init(with value: T?, repeatedValues: Bool = true) {
         // First initialize value, so send() is not triggered
         self.value = value
         self.subj = PassthroughSubject<Output, Failure>()
         self.repeatedValues = repeatedValues
     }
 
-    init(repeatedValues: Bool = true) {
+    public init(repeatedValues: Bool = true) {
         self.subj = PassthroughSubject<Output, Failure>()
         self.repeatedValues = repeatedValues
     }
