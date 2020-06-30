@@ -12,8 +12,11 @@ let package = Package(
             name: "TelloSwift",
             targets: ["TelloSwift", "TelloSwiftObjC"]),
     ],
+    dependencies: [
+        .package(url: "https://github.com/bgromov/TransformSwift.git", from: "0.1.0"),
+    ],
     targets: [
         .target(name: "TelloSwiftObjC", dependencies: [], path: "Sources/TelloSwiftObjC"),
-        .target(name: "TelloSwift", dependencies: ["TelloSwiftObjC"]),
+        .target(name: "TelloSwift", dependencies: ["TelloSwiftObjC", .product(name: "Transform", package: "TransformSwift")]),
     ]
 )

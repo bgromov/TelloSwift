@@ -9,6 +9,8 @@
 import Foundation
 import Combine
 
+import Transform
+
 /// Quadrotor controls
 public struct QuadrotorControls: Equatable, CustomDebugStringConvertible {
     /// Rotation around X-axis (positive counter-clockwise)
