@@ -16,7 +16,7 @@ import TelloSwiftObjC
 
 /* */
 /// UDP connection states.
-public enum ConnectionState {
+public enum ConnectionState: String {
     case disconnected
     case connecting
     case connected
@@ -25,7 +25,7 @@ public enum ConnectionState {
 }
 
 /// Flight states.
-public enum FlightState {
+public enum FlightState: String {
     case unknown
 
     case landed
