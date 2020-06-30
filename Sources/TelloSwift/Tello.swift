@@ -87,13 +87,16 @@ public class Tello {
     /// UDP port.
     public let port: NWEndpoint.Port
 
+    // Doing this in real time is very slow
+    private let timeZone = TimeInterval(TimeZone.current.secondsFromGMT())
+
     private var connection: NWConnection?
     private let netQueue: DispatchQueue
 
     private var connTimer: Timer?
     public private(set) var timeoutInterval: TimeInterval = 2.0
 
-    private var keepAliveTimer: Timer?
+    private var keepAliveTimer: BackgroundTimer?
     public var keepAliveInterval: Double = 0.05 // in seconds, i.e. 20 Hz
 
     private var messageHandlers: [MessageId:((PacketPreambula, Data?) -> Void)] = [:]
@@ -252,16 +255,19 @@ public class Tello {
     }
 
     private func startKeepAliveTimer() {
-        DispatchQueue.main.async {
-            self.keepAliveTimer?.invalidate()
-            self.keepAliveTimer = Timer.scheduledTimer(withTimeInterval: self.keepAliveInterval,
-                                                       repeats: true,
-                                                       block: self.keepAliveCallback(_:))
-        }
+//        DispatchQueue.main.async {
+//            self.keepAliveTimer?.invalidate()
+//            self.keepAliveTimer = Timer.scheduledTimer(withTimeInterval: self.keepAliveInterval,
+//                                                       repeats: true,
+//                                                       block: self.keepAliveCallback(_:))
+//        }
+
+        self.keepAliveTimer?.invalidate()
+        self.keepAliveTimer = BackgroundTimer(repeat: self.keepAliveInterval, event: self.keepAliveCallback)
     }
 
     // MARK: Keep Alive Timer
-    private func keepAliveCallback(_ : Timer) {
+    private func keepAliveCallback(_ : BackgroundTimer) {
         self.sendSticksData(ctrlRx: self.ctrl.roll ?? 0.0,
                             ctrlRy: self.ctrl.pitch ?? 0.0,
                             ctrlLx: self.ctrl.yaw ?? 0.0,
@@ -586,7 +592,8 @@ public class Tello {
     ///   - ctrlLy: Left Y control, corresponds to `thrust`. Clamped to [`-1.0...1.0`] interval.
     ///   - fastMode: switches the drone to fast mode. Can be used, e.g., when flying outdoors. Off by default.
     private func sendSticksData(ctrlRx: Double, ctrlRy: Double, ctrlLx: Double, ctrlLy: Double, fastMode: Bool = false) {
-        let now = Calendar.current.dateComponents(in: .current, from: Date())
+        let date = Date().addingTimeInterval(timeZone) //calendar.dateComponents(in: .current, from: Date())
+        let now = Calendar.current.dateComponents([.hour, .minute, .second, .nanosecond], from: date)
         var sticks = SticksData()
 
         sticks.axis1 = UInt16(1024.0 + 660.0 * ctrlRx.clamped(to: -1.0...1.0)) // x
@@ -600,9 +607,6 @@ public class Tello {
         payload.append(UInt8(now.hour!))
         payload.append(UInt8(now.minute!))
         payload.append(UInt8(now.second!))
-        //payload.appendLe(shortInt: UInt16(now.hour!))
-        //payload.appendLe(shortInt: UInt16(now.minute!))
-        //payload.appendLe(shortInt: UInt16(now.second!))
 
         let ms = UInt16(now.nanosecond! / 1000000)
         payload.appendLe(shortInt: UInt16(ms & 0xff))
