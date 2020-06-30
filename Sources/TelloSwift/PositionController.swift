@@ -287,6 +287,8 @@ public class PositionController {
         pid.y.reset()
         pid.z.reset()
         pid.yaw.reset()
+
+        print("New target: ", target)
     }
 
     /// Sets controller frame origin to given pose in input frame.
