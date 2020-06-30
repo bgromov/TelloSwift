@@ -104,15 +104,14 @@ public class Pid {
 
     /// Creates a PID controller with specified gains and a deadband.
     ///
-    /// The intergral and derivative gains start contributing to the controller output only on the second call to `update()`.
+    /// The integral and derivative gains start contributing to the controller output only on the second call to `update()`.
     ///
     /// - Parameters:
-    ///   - p: Proporional gain of the controller. Must be more than or equal to zero.
-    ///   - i: Intergral gain of the controller. Must be more than or equal to zero.
+    ///   - p: Proportional gain of the controller. Must be more than or equal to zero.
+    ///   - i: Integral gain of the controller. Must be more than or equal to zero.
     ///   - d: Derivative gain of the controller. Must be more than or equal to zero.
     ///   - deadband: Allows controller to threshold and ignore errors smaller than the specified value. That is particularly useful for measurements with high variance (noise).
     ///   - windowSize: Number of last samples to consider when calculating convergence.
-
     public init?(p: Double, i: Double, d: Double, deadband: Double = 0.001, windowSize: Int = 5) {
         guard p >= 0.0 && i >= 0.0 && d >= 0.0 else {
             print("error: PID gains can't be less than zero: {P: \(p), I: \(i), D: \(d)}")
