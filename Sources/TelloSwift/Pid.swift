@@ -100,6 +100,7 @@ public class Pid {
 
     public private(set) var lastError: Double?
     public private(set) var lastDError: Double?
+    public private(set) var integralError: Double?
     private var lastTime: CFTimeInterval?
 
     /// Creates a PID controller with specified gains and a deadband.
@@ -146,6 +147,7 @@ public class Pid {
         lastError = nil
         lastDError = nil
         lastTime = nil
+        integralError = nil
         converged = false
         ringBuf = RingBuffer(count: ringBuf.size)
     }
@@ -175,7 +177,7 @@ public class Pid {
         var res: Double
 
         if let lastE = lastError {
-            dE = lastE - error
+            dE = error - lastE
         }
 
         // Proportional
@@ -188,7 +190,11 @@ public class Pid {
         if let lastT = lastTime {
             let dt = now - lastT
 
-            i = kI * dE * dt
+            let newIntegral = dE * dt
+
+            integralError = (integralError == nil) ?  newIntegral : integralError! + newIntegral
+
+            i = kI * integralError!
             d = kD * dE / dt
         }
 
