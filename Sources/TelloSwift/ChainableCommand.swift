@@ -38,19 +38,34 @@ public class ChainableCommand<Context, Output, Failure>: Publisher where Failure
     internal func enqueue<Command>(command: Command) -> Self
         where Command: ExecutableCommand, Context == Command.Context, Output == Command.Output, Failure == Command.Failure
     {
-        let future = CommandFuture { promise in
-            command.execute(context: self.context, promise: promise)
+
+        /*
+        // Chain to the tail
+        trailing = trailing
+            .flatMap { _ in
+                return CommandFuture { promise in
+                    command.execute(context: self.context, promise: promise)
+                }
+            }.eraseToAnyPublisher()
+
+        return self
+        */
+
+        let createFuture = {
+            return CommandFuture { promise in
+                command.execute(context: self.context, promise: promise)
+            }
         }
 
         if committed {
             // if committed, start the chain over
-            trailing = future.eraseToAnyPublisher()
+            trailing = createFuture().eraseToAnyPublisher()
             committed = false
         } else {
             // otherwise, chain to the tail
             trailing = trailing
                 .flatMap { _ in
-                    return future
+                    return createFuture()
                 }.eraseToAnyPublisher()
         }
 
