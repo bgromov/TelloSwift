@@ -90,6 +90,12 @@
 
 + (LogRecord) from: (nonnull NSData *) data {
     LogRecord rec;
+
+    if (data.length < (sizeof(LogRecordHeader) + 2)) {
+        NSLog(@"LogRecordCreator: No data. Corrupted packet?");
+        return rec;
+    }
+
     NSUInteger lenPayload = data.length - sizeof(LogRecordHeader) - 2; // minus CRC16
 
     [data getBytes:&rec.header length:sizeof(LogRecordHeader)];
