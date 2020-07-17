@@ -370,7 +370,6 @@ public class PositionController {
         if let targetZ = t.z, let measuredZ = measured.z {
             if !(targetZ.isNaN || measuredZ.isNaN) {
                 result.thrust = pid.z.update(setPoint: targetZ, measuredValue: measuredZ)
-                print(pid.z)
             }
             converged.append(pid.z.converged)
             //print("debug: Update thrust control")
