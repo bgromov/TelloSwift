@@ -227,6 +227,10 @@ public class Tello {
         guard connectionState != .disconnected else {return}
         connectionState <- .timedout
 
+        // Re-create the connection
+        connection = nil
+        connect()
+
         keepAliveTimer?.invalidate()
         keepAliveTimer = nil
 
