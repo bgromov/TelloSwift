@@ -174,7 +174,8 @@ class FlighLogParser {
                 fallthrough
             case .ctrlVertDbg, .ctrlVertVelDbg, .ctrlVertAccDbg, .ctrlHorizDbg, ._unknown_x0517, .ctrlHorizAttDbg, .ctrlHorizAngVelDbg, .ctrlHorizCcpmDbg, .ctrlHorizMotorDbg:
                 /// FIXME: Unhandled Log Records
-                block(.unhandled(recType!, rec.header.recordLength, rec.payload.takeUnretainedValue() as Data))
+//                block(.unhandled(recType!, rec.header.recordLength, rec.payload.takeUnretainedValue() as Data))
+                break
 
             default:
                 block(.unknown(rec))
