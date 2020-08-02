@@ -166,9 +166,9 @@ public class Tello {
 //                                     z:   Pid(p: 2.0, i: 0.005, d: 0.01,  deadband: 0.05)!,
 //                                     yaw: Pid(p: 3.0, i: 0.00,   d: 0.0,  deadband: deg2rad(1.0))!)
 
-        posCtrl = PositionController(x:   Pid(p: 1.2, i: 0.3, d: 0.8, deadband: 0.05)!,
-                                     y:   Pid(p: 1.2, i: 0.3, d: 0.8, deadband: 0.05)!,
-                                     z:   Pid(p: 4.0, i: 0.5, d: 0.8, deadband: 0.05)!,
+        posCtrl = PositionController(x:   Pid(p: 1.2, i: 0.00, d: 0.45, deadband: 0.15)!,
+                                     y:   Pid(p: 1.2, i: 0.00, d: 0.45, deadband: 0.15)!,
+                                     z:   Pid(p: 2.0, i: 0.005, d: 0.01, deadband: 0.05)!,
                                      yaw: Pid(p: 0.7, i: 0.0, d: 0.5,  deadband: deg2rad(1.0))!)
 
         ctrl = QuadrotorControls(roll: 0.0, pitch: 0.0, yaw: 0.0, thrust: 0.0)
