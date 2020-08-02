@@ -282,13 +282,13 @@ enum Network: String {
     //... case ipv6 = "ipv6"
 }
 
-func getAddress(for network: String) -> String? {
-    var address: String?
+public func getAddress() -> [String:String] {
+    var address: [String:String] = [:]
 
     // Get list of all interfaces on the local machine:
     var ifaddr: UnsafeMutablePointer<ifaddrs>?
-    guard getifaddrs(&ifaddr) == 0 else { return nil }
-    guard let firstAddr = ifaddr else { return nil }
+    guard getifaddrs(&ifaddr) == 0 else { return [:] }
+    guard let firstAddr = ifaddr else { return [:] }
 
     // For each interface ...
     for ifptr in sequence(first: firstAddr, next: { $0.pointee.ifa_next }) {
@@ -299,18 +299,19 @@ func getAddress(for network: String) -> String? {
         if addrFamily == UInt8(AF_INET) { // || addrFamily == UInt8(AF_INET6) {
 
             // Check interface name:
-            let name = String(cString: interface.ifa_name)
-            print("iface: \(name)")
-            
-            if name == network {
+            let iface = String(cString: interface.ifa_name)
+//            print("iface: \(name)")
+
+            if ["lo0", "en0", "en2", "pdp_ip0"].contains(iface) {
                 // Convert interface address to a human readable string:
                 var hostname = [CChar](repeating: 0, count: Int(NI_MAXHOST))
                 getnameinfo(interface.ifa_addr, socklen_t(interface.ifa_addr.pointee.sa_len),
                             &hostname, socklen_t(hostname.count),
                             nil, socklen_t(0), NI_NUMERICHOST)
-                address = String(cString: hostname)
+                let addr = String(cString: hostname)
+                address[iface] = addr
 
-                print(address!)
+//                print(addr)
             }
         }
     }
