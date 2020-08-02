@@ -200,8 +200,16 @@ public class Tello {
             print("ack: takeoffCmd")
         }
 
+        setMessageHandler(messageId: .throwAndGoCmd) { _, _ in
+            print("ack: throwAndGoCmd")
+        }
+
         setMessageHandler(messageId: .landCmd) { _, _ in
             print("ack: landCmd")
+        }
+
+        setMessageHandler(messageId: .palmLandCmd) { _, _ in
+            print("ack: palmLandCmd")
         }
 
         flightState.sink {
@@ -636,6 +644,14 @@ public class Tello {
         sendData(data: packet.getRawData())
     }
 
+    private func sendThrowAndGo() {
+        let packet = TelloPacket(command: .throwAndGoCmd,
+                                 packetTypeInfo: .init(byte: 0x48),
+                                 payload: nil) // Can be used to cancel takeoff (?)
+
+        sendData(data: packet.getRawData())
+    }
+
     private func sendLand() {
         let packet = TelloPacket(command: .landCmd,
                                  packetTypeInfo: .init(byte: 0x68),
@@ -648,6 +664,14 @@ public class Tello {
         let packet = TelloPacket(command: .landCmd,
                                  packetTypeInfo: .init(byte: 0x68),
                                  payload: Data([UInt8(1)]))
+
+        sendData(data: packet.getRawData())
+    }
+
+    private func sendPalmLand() {
+        let packet = TelloPacket(command: .palmLandCmd,
+                                 packetTypeInfo: .init(byte: 0x68),
+                                 payload: Data([UInt8(0)])) // Can be used to stop landing (?)
 
         sendData(data: packet.getRawData())
     }
@@ -818,6 +842,26 @@ public class Tello {
         return future
     }
 
+    /// Start flying once the drone is thrown by the user
+    public func throwAndGo() -> Future<Void, Never> {
+        let future = Future<Void, Never>() { promise in
+            self.flightState
+                .receive(on: DispatchQueue.global(qos: .userInteractive))
+                .sink { (newState: FlightState) in
+                    let oldState = self.flightState.value!
+                    if (oldState == .takingOff && newState == .hovering) || (oldState == .landed && newState == .hovering) {
+                        promise(.success(()))
+                    }
+                }.store(in: &self.subs)
+        }
+
+        cancelGoTo()
+
+        self.sendThrowAndGo()
+
+        return future
+    }
+
     /// Makes Tello to take off to a given altitude
     ///
     /// - Parameters:
@@ -839,6 +883,14 @@ public class Tello {
     public func land() {
         cancelGoTo()
         sendLand()
+    }
+
+    /// Lands the drone on the user's palm.
+    ///
+    /// The method immediatelly cancels a position controller target.
+    public func palmLand() {
+        cancelGoTo()
+        sendPalmLand()
     }
 
     /// Cancels the automatic landing.

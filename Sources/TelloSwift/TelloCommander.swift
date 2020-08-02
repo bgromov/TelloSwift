@@ -109,11 +109,27 @@ public class TelloCommander: ChainableCommand<Tello, Void, Error> {
         return command.enqueue(command: Command.takeoff(altitude: altitude))
     }
 
+    /// Throw and go.
+    ///
+    /// - Parameters:
+    ///   - altitude: Height to get to.
+    /// - Returns: Modified command chain.
+    public func throwAndGo() -> Chain {
+        return command.enqueue(command: Command.throwAndGo)
+    }
+
     /// Lands the drone.
     ///
     /// - Returns: Modified command chain.
     public func land() -> Chain {
         return command.enqueue(command: Command.land)
+    }
+
+    /// Lands the drone on the user's palm.
+    ///
+    /// - Returns: Modified command chain.
+    public func palmLand() -> Chain {
+        return command.enqueue(command: Command.palmLand)
     }
 
     /// Commands the drone to move to a new pose in its odometry frame.
@@ -251,7 +267,9 @@ private extension TelloCommander {
         case connect
         case disconnect
         case takeoff(altitude: Double)
+        case throwAndGo
         case land
+        case palmLand
         case goTo(pose: QuadrotorPose)
 
         func execute(context: Tello?, promise: @escaping CommandResult) {
@@ -287,6 +305,13 @@ private extension TelloCommander {
                     }
                 }.store(in: &context.subs)
                 context.manualTakeoff(altitude: altitude)
+            case .throwAndGo:
+                context.flightState.sink { state in
+                    if state == .hovering {
+                        promise(.success(Void()))
+                    }
+                }.store(in: &context.subs)
+                _ = context.throwAndGo()
             case .land:
                 context.flightState.sink { state in
                     if state == .landed {
@@ -294,6 +319,13 @@ private extension TelloCommander {
                     }
                 }.store(in: &context.subs)
                 context.land()
+            case .palmLand:
+                context.flightState.sink { state in
+                    if state == .landed {
+                        promise(.success(Void()))
+                    }
+                }.store(in: &context.subs)
+                context.palmLand()
             case .goTo(pose: let pose):
                 context.controller.state.sink { state in
                     if case .reset( _ ) = state {
