@@ -62,6 +62,7 @@ public enum FlightState: String {
 public enum PositionSource {
     case mvo
     case vo
+    case mvoProximity
     case user(Sensor<AnyPositionMeasurement>)
 }
 
@@ -956,6 +957,13 @@ public class Tello {
             mvo.sink {
                 posSensor.value = AnyPositionMeasurement($0)
             }.store(in: &controllerSubs)
+        case .mvoProximity:
+            mvo.combineLatest(proximity) {
+                return AnyPositionMeasurement(velocity: .zero, position: simd_double3(x: $0.position.x, y: $0.position.y, z: $1), isValid: $0.isValid)
+            }.sink {
+                print($0)
+                posSensor.value = AnyPositionMeasurement($0)
+            }.store(in: &controllerSubs)
         case .vo:
             vo.sink {
                 posSensor.value = AnyPositionMeasurement($0)
@@ -1027,8 +1035,25 @@ public class Tello {
     ///  - `yaw`: from inertial measurement unit (IMU) sensor.
     public func setOriginToVo() {
         // FIXME: Enforce the input source to .vo
+
         if let vo = self.vo.value, let imu = self.imu.value, let height = self.proximity.value {
             setOrigin(x: vo.position.x, y: vo.position.y, z: vo.position.z - Double(height), yaw: imu.orientation.rpy.yaw)
+        }
+    }
+
+    public func setOriginToMvo() {
+        // FIXME: Enforce the input source to .mvo
+
+        if let mvo = self.mvo.value, let imu = self.imu.value, let height = self.proximity.value {
+            setOrigin(x: mvo.position.x, y: mvo.position.y, z: mvo.position.z - Double(height), yaw: imu.orientation.rpy.yaw)
+        }
+    }
+
+    public func setOriginToMvoProximity() {
+        // FIXME: Enforce the input source to .mvoProximity
+
+        if let mvo = self.mvo.value, let imu = self.imu.value, let height = self.proximity.value {
+            setOrigin(x: mvo.position.x, y: mvo.position.y, z: Double(height), yaw: imu.orientation.rpy.yaw)
         }
     }
 
