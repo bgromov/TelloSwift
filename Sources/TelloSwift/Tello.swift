@@ -105,7 +105,7 @@ public class Tello {
     private var ctrl: QuadrotorControls
 
     public var fastMode: Bool = false
-
+    public var resetOriginOnTakeoff: Bool = true
     /* Debug stuff */
     private let stopWatch: StopWatch = StopWatch(maxWindow: 100)
     // [id : [size : count]]
@@ -869,7 +869,12 @@ public class Tello {
 
     // FIXME: Should the altitude be strictly positive value? Since it's just a position along Z-axis it can be anything.
     public func manualTakeoff(altitude: Double) {
-        self.setOriginToVo()
+        if self.resetOriginOnTakeoff {
+            print("Resetting the origin")
+            self.setOrigin()
+//        self.setOriginToVo()
+//        self.setOriginToMvoProximity()
+        }
 
         self.ctrl = QuadrotorControls(roll: -1.0, pitch: -1.0, yaw: 1.0, thrust: -1.0)
         DispatchQueue.global().asyncAfter(wallDeadline: .now() + 0.5) {

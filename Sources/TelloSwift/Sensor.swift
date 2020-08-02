@@ -54,7 +54,7 @@ public class Sensor<T>: ObservableObject, Publisher where T: Equatable {
         self.repeatedValues = repeatedValues
     }
 
-    internal static func <- (left: Sensor<Output>, right: Output?) {
+    public static func <- (left: Sensor<Output>, right: Output?) {
         left.value = right
     }
 
@@ -71,11 +71,15 @@ public struct IsValid: Equatable {
     var x: Bool
     var y: Bool
     var z: Bool
+
+    public static var allValid: IsValid = .init(x: true, y: true, z: true)
 }
 
 public struct IsValidVelPos: Equatable {
     var vel: IsValid
     var pos: IsValid
+
+    public static var allValid: IsValidVelPos = .init(vel: .allValid, pos: .allValid)
 }
 
 public extension Bool {
