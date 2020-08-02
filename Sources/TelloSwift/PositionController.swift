@@ -379,6 +379,7 @@ public class PositionController {
         if let targetYaw = t.yaw, let measuredYaw = measured.yaw {
             if !(targetYaw.isNaN || measuredYaw.isNaN) {
                 result.yaw = -1.0 * pid.yaw.update(setPoint: targetYaw, measuredValue: measuredYaw)
+                print(rad2deg(targetYaw), rad2deg(measuredYaw))
             }
             converged.append(pid.yaw.converged)
             //print("debug: Update yaw control")
