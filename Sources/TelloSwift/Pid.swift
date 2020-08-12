@@ -153,6 +153,24 @@ public class Pid: Hashable {
         self.init(p: pid[0], i: pid[1], d: pid[2], deadband: deadband, windowSize: windowSize)
     }
 
+    public func dictionary() -> Dictionary<String, Any> {
+        return ["p": p,
+                "i": i,
+                "d": d,
+                "deadband": deadband,
+                "windowSize": windowSize]
+    }
+
+    public static func from(_ dictionary: Dictionary<String, Any>) -> Pid? {
+        guard let p = dictionary["p"] as? Double else { return nil }
+        guard let i = dictionary["i"] as? Double else { return nil }
+        guard let d = dictionary["d"] as? Double else { return nil }
+        guard let deadband = dictionary["deadband"] as? Double else { return nil }
+        guard let windowSize = dictionary["windowSize"] as? Int else { return nil }
+
+        return Pid(p: p, i: i, d: d, deadband: deadband, windowSize: windowSize)
+    }
+
     /// Resets the integral and derivative of the controller.
     public func reset() {
         lastError = nil
