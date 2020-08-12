@@ -31,7 +31,11 @@ public class Pid: Hashable {
     /// The error within the closed interval [`-deadband`; `deadband`]
     /// is considered to be zero. In other words, the controller output is set to 0.0,
     /// if the difference between measured and target values is less than `deadband`.
-    public var deadband: Double
+    public var deadband: Double {
+        willSet {
+            print("info: New deadband: \(newValue)")
+        }
+    }
 
     /// Indicates that error converged to dead band interval.
     public private(set) var converged: Bool
