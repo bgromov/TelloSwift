@@ -163,7 +163,7 @@ public class PositionController {
     public private(set) var state: Sensor<State>
 
     /// Controllers for each control axis
-    public let pid: Pid3D
+    public var pid: Pid3D
 
     /// User-specified target pose (read-only). To set the target use `setTarget()`.
     public private(set) var target: Sensor<QuadrotorPose>
