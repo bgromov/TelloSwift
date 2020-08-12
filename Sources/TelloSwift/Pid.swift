@@ -119,7 +119,7 @@ public class Pid {
             return nil
         }
 
-        guard deadband > 0 else {
+        guard deadband >= 0 else {
             print("error: PID deadband can't be less than zero: \(deadband)")
             return nil
         }
