@@ -993,6 +993,7 @@ public class Tello {
     ///   - y: PID for Y-axis
     ///   - z: PID for Z-axis
     ///   - yaw: PID for Yaw
+    @available(*, deprecated, message: "Use setControllerPids instead")
     public func setControllerGains(x: Pid?, y: Pid?, z: Pid?, yaw: Pid?) {
         if let x = x {
             posCtrl.pid.x.gains = x.gains
@@ -1008,6 +1009,32 @@ public class Tello {
         }
     }
 
+    /// Sets position controller PIDs.
+    ///
+    /// - Parameters:
+    ///   - x: Pid object for X-axis
+    ///   - y: Pid object for Y-axis
+    ///   - z: Pid object for Z-axis
+    ///   - yaw: Pid object for Yaw
+    public func setControllerPids(x: Pid?, y: Pid?, z: Pid?, yaw: Pid?) {
+        if let x = x {
+            posCtrl.pid.x.gains = x.gains
+            posCtrl.pid.x.deadband = x.deadband
+        }
+        if let y = y {
+            posCtrl.pid.y.gains = y.gains
+            posCtrl.pid.y.deadband = y.deadband
+        }
+        if let z = z {
+            posCtrl.pid.z.gains = z.gains
+            posCtrl.pid.z.deadband = z.deadband
+        }
+        if let yaw = yaw {
+            posCtrl.pid.yaw.gains = yaw.gains
+            posCtrl.pid.yaw.deadband = yaw.deadband
+        }
+    }
+
     /// Returns position controller gains.
     ///
     /// - Returns: Taged tuple with corresponding arrays of PID gains for each axis.
@@ -1016,6 +1043,16 @@ public class Tello {
                 y: posCtrl.pid.y.gains,
                 z: posCtrl.pid.z.gains,
                 yaw: posCtrl.pid.yaw.gains)
+    }
+
+    /// Returns position controller PIDs.
+    ///
+    /// - Returns: Taged tuple with corresponding Pid objects for each axis.
+    public func getControllerPids() -> (x: Pid, y: Pid, z: Pid, yaw: Pid) {
+        return (x: posCtrl.pid.x,
+                y: posCtrl.pid.y,
+                z: posCtrl.pid.z,
+                yaw: posCtrl.pid.yaw)
     }
 
     /// Sets the origin of position controller to given coordinates.
