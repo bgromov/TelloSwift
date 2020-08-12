@@ -153,6 +153,14 @@ public class Pid: Hashable {
         self.init(p: pid[0], i: pid[1], d: pid[2], deadband: deadband, windowSize: windowSize)
     }
 
+    public convenience init() {
+        self.init(p: 0.0, i: 0.0, d: 0.0)!
+    }
+
+    public convenience init(from: Pid) {
+        self.init(from.gains, deadband: from.deadband, windowSize: from.windowSize)!
+    }
+
     public func dictionary() -> Dictionary<String, Any> {
         return ["p": p,
                 "i": i,
