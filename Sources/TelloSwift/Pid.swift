@@ -14,7 +14,16 @@ import QuartzCore.CoreAnimation
 /// - Remark: The controller uses wall-time clock to estimate the time
 /// between measurements to calculate the integrals and derivatives, and
 /// therefore can be only used for online control.
-public class Pid {
+public class Pid: Hashable {
+    public static func == (lhs: Pid, rhs: Pid) -> Bool {
+        return (lhs.gains == rhs.gains) && (lhs.deadband == rhs.deadband)
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(gains)
+        hasher.combine(deadband)
+    }
+
     private var kP: Double
     private var kI: Double
     private var kD: Double
