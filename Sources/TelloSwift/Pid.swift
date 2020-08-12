@@ -27,6 +27,7 @@ public class Pid {
     /// Indicates that error converged to dead band interval.
     public private(set) var converged: Bool
 
+    private var windowSize: Int
     private var ringBuf: RingBuffer<Double>
 
     /// Proportional (P) gain of the controller. Must be more than or equal to zero.
@@ -130,6 +131,7 @@ public class Pid {
 
         self.deadband = deadband
         self.converged = false
+        self.windowSize = windowSize
         self.ringBuf = RingBuffer(count: windowSize)
     }
 
@@ -137,9 +139,9 @@ public class Pid {
     /// - Parameters:
     ///   - pid: Array of 3 doubles corresponding to [P, I, D] terms of the controller.
     ///   - deadband: Allows controller to threshold and ignore errors smaller than the specified value. That is particularly useful for measurements with high variance (noise).
-    public convenience init?(_ pid: [Double], deadband: Double = 0.001) {
+    public convenience init?(_ pid: [Double], deadband: Double = 0.001, windowSize: Int = 5) {
         precondition(pid.count == 3, "Number of PID gains must be exactly 3")
-        self.init(p: pid[0], i: pid[1], d: pid[2], deadband: deadband)
+        self.init(p: pid[0], i: pid[1], d: pid[2], deadband: deadband, windowSize: windowSize)
     }
 
     /// Resets the integral and derivative of the controller.
