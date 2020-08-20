@@ -84,9 +84,9 @@ public typealias Status<T: Equatable> = Sensor<T>
 public class Tello {
     // Connection parameters
     /// Hostname or IP.
-    public let host: NWEndpoint.Host
+    public private(set) var host: NWEndpoint.Host
     /// UDP port.
-    public let port: NWEndpoint.Port
+    public private(set) var port: NWEndpoint.Port
 
     // Doing this in real time is very slow
     private let timeZone = TimeInterval(TimeZone.current.secondsFromGMT())
@@ -221,6 +221,17 @@ public class Tello {
                 (oldValue == .landed    && newValue == .hovering)
                 ? true : false
         }.store(in: &subs)
+    }
+
+    public func setConnectionParameters(host: String, port: UInt16 = 8889) {
+        self.host = NWEndpoint.Host(host)
+        self.port = NWEndpoint.Port(rawValue: port)!
+
+        if connectionState != .disconnected {
+            // if connected or in error state, reconnect
+            self.disconnect()
+            self.connect()
+        }
     }
 
     private func timerSet(timeout: TimeInterval) {
