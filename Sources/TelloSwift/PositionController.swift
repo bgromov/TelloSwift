@@ -8,6 +8,7 @@
 
 import Foundation
 import Combine
+import simd
 
 import Transform
 
@@ -176,6 +177,11 @@ public class PositionController {
         }
     }
 
+    /// Transform from odometry frame to body frame.
+    ///
+    /// Corresponds to measured yaw and is used for converting control outputs to body frame.
+    public private(set) var bodyTf: Transform = .identity
+
     /// Time-aggregated measurements.
     ///
     /// Since measurements for each axis may arrive independently, at any given moment some of the values could be `nil`.
@@ -246,6 +252,7 @@ public class PositionController {
 
             // Make pose
             let pose = QuadrotorPose(x: $0.position.x, y: $0.position.y, z: $0.position.z, yaw: nil) - self.origin
+
             // Aggregate inputs (measurements)
             self.input.value?.assignNonEmpty(other: pose)
             // Calculate correction
@@ -259,6 +266,13 @@ public class PositionController {
         orientation.sink {
             // Make pose
             let pose = QuadrotorPose(x: nil, y: nil, z: nil, yaw: $0.orientation.rpy.yaw) - self.origin
+
+            // Transforms from body to odometry frame
+            // e.g. vector_in_odom = bodyTf * vector_in_body
+            // conversely, to get a vector in body frame:
+            // vector_in_body = bodyTf.inversed * vector_in_odom
+            self.bodyTf = Transform.init(simd_quatd(roll: 0.0, pitch: 0.0, yaw: $0.orientation.rpy.yaw))
+
             // Aggregate inputs (measurements)
             self.input.value?.assignNonEmpty(other: pose)
             // Calculate correction
@@ -336,11 +350,29 @@ public class PositionController {
     ///   - measured: Actual (measured) pose of the quadrotor.
     /// - Returns: Control values for `roll`, `pitch`, `yaw`, and `thrust`.
     public func update(measured: QuadrotorPose) -> QuadrotorControls? {
-        guard let t = target.value else {
+        guard let target = target.value else {
             state <- .idle
             //print("error: No target set")
             return nil
         }
+
+        // Input vector in body frame
+        let measPos = self.bodyTf.inversed * simd_double3(x: measured.x ?? 0.0, y: measured.y ?? 0.0, z: measured.z ?? 0.0)
+        // Input in body frame
+        let measBody = QuadrotorPose(x: measured.x == nil ? nil : measPos.x,
+                                     y: measured.y == nil ? nil : measPos.y,
+                                     z: measured.z == nil ? nil : measPos.z,
+                                     yaw: measured.yaw)
+
+        let measured = measBody
+
+        // Target vector in body frame
+        let targetPos = self.bodyTf.inversed * simd_double3(x: target.x ?? 0.0, y: target.y ?? 0.0, z: target.z ?? 0.0)
+        // Target in body frame
+        let t = QuadrotorPose(x: target.x == nil ? nil : targetPos.x,
+                              y: target.y == nil ? nil : targetPos.y,
+                              z: target.z == nil ? nil : targetPos.z,
+                              yaw: target.yaw)
 
         state <- .running(.correcting)
 
