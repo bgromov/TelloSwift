@@ -72,6 +72,21 @@ public struct QuadrotorPose: Equatable, CustomDebugStringConvertible {
     /// Rotation around Z-axis
     public var yaw: Double?
 
+    /// Transform that represents the current quadrotor pose
+    public var transform: Transform? {
+        get {
+            guard let x = x else { return nil }
+            guard let y = y else { return nil }
+            guard let z = z else { return nil }
+            guard let yaw = yaw else { return nil }
+
+            let rot = simd_quatd(roll: 0.0, pitch: 0.0, yaw: yaw)
+            let pos = simd_double3(x: x, y: y, z: z)
+
+            return Transform(rot, pos)
+        }
+    }
+
     /// Creates QuadrotorPose with all members set to nil.
     public init() {}
     /// Creates QuadrotorPose with specified parameters.
@@ -80,6 +95,14 @@ public struct QuadrotorPose: Equatable, CustomDebugStringConvertible {
         self.y = y
         self.z = z
         self.yaw = yaw
+    }
+    /// Creates QuadrotorPose from Transform
+    public init(from tf: Transform) {
+        x = tf.origin.x.isNaN ? nil : tf.origin.x
+        y = tf.origin.y.isNaN ? nil : tf.origin.y
+        z = tf.origin.z.isNaN ? nil : tf.origin.z
+
+        yaw = tf.rotation.rpy.yaw.isNaN ? nil : tf.rotation.rpy.yaw
     }
 
     @discardableResult
